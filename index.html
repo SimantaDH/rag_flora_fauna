@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en-GB" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indian Flora and Fauna by RAG</title>
+<meta name="description" content="Extraction of Indian cultural elements using RAG: the plants and animals named in eight Indian literary texts, what a small language model found, and where it went wrong. A project by Simanta Nandi, IIT (ISM) Dhanbad.">
+<meta name="author" content="Simanta Nandi">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Apply the saved or system theme before the page paints.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#abstract">Skip to the abstract</a>
+
+<header class="bar" id="top">
+  <a class="brand" href="#top" aria-label="Back to the top">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c4 6 9 9 9 15a9 9 0 0 1-18 0c0-6 5-9 9-15z" fill="currentColor" opacity=".9"/><path d="M16 12c1.6 2.6 3.5 4 3.5 6.6a3.5 3.5 0 0 1-7 0c0-2.6 1.9-4 3.5-6.6z" fill="var(--lamp)"/></svg>
+    <span>Flora &amp; Fauna by RAG</span>
+  </a>
+  <button class="menu-btn" aria-expanded="false" aria-controls="nav">Menu</button>
+  <nav id="nav" aria-label="Sections">
+    <a href="#abstract">Abstract</a>
+    <a href="#corpus">Corpus</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#audit">Audit</a>
+    <a href="#bias">Bias</a>
+    <a href="#discussion">Discussion</a>
+    <a href="#cite">Cite</a>
+    <a href="#author">Author</a>
+    <a class="gh" id="gh-link" href="https://github.com/SimantaDH/rag" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0z"/></svg>
+      GitHub
+    </a>
+    <button class="theme" id="theme-btn" type="button" aria-label="Switch between day and night reading">
+      <span class="sun" aria-hidden="true"></span><span class="theme-label">Night</span>
+    </button>
+  </nav>
+</header>
+
+<main>
+<!-- ================= HERO: the lamp ================= -->
+<section class="hero" id="hero" aria-labelledby="hero-title">
+  <div class="dark-text" id="dark-text" aria-hidden="true"></div>
+  <div class="lit-text" id="lit-text" aria-hidden="true"></div>
+  <canvas class="fireflies" id="fireflies" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <p class="hero-kicker">Monsoon Semester 2026 &nbsp;/&nbsp; Digital Humanities</p>
+    <h1 id="hero-title">Extraction of Indian Cultural Elements Using RAG</h1>
+    <p class="hero-sub">Which plants and animals live in eight Indian books, what a small language model said was there, and why the two lists do not match.</p>
+    <p class="hero-by">Simanta Nandi &nbsp;/&nbsp; MA, Digital Humanities and Social Sciences, IIT (ISM) Dhanbad</p>
+    <p class="hero-hint" id="hero-hint">Move the lamp across the dark to read. Under it, every name of a plant or animal glows.</p>
+    <button class="lamp-all" id="lamp-all" type="button">Light the whole page</button>
+  </div>
+</section>
+
+<!-- ================= ABSTRACT ================= -->
+<section class="sec" id="abstract" aria-labelledby="h-abstract">
+  <div class="wrap narrow">
+    <h2 id="h-abstract">Abstract</h2>
+    <p class="lead">This project asks a plain question. When a small language model reads Indian literature through a retrieval-augmented generation (RAG) pipeline, can it tell us which plants and animals the texts name?</p>
+    <p>I built a repository of eight Indian literary texts in English: six public-domain files from Project Gutenberg, Naidu's <i>The Bird of Time</i> from Wikisource, and Hansda Sowvendra Shekhar's <i>The Adivasi Will Not Dance</i>, which is still in copyright. Each one went into AnythingLLM and was queried with Google's Gemma 3 4B, running on my own machine through LM Studio. The prompt asked for every tree, plant, flower, herb and crop, and every mammal, bird, reptile, fish and insect, each backed by an exact quotation.</p>
+    <p>The answers looked careful, but most were not right. Of the <span data-n="allm-rows">106</span> rows the model returned, only <span data-n="allm-correct">19</span> were fully correct. Many of its quotations do not exist in the books. Some of its "animals" were people, a passenger jeep and chewing tobacco. To find out what the texts really contain, I read every candidate name against the full text of all eight books, using WordNet only to suggest candidates. The result is <span data-n="entries">509</span> text-level entries (<span data-n="verified">469</span> verified and <span data-n="ambiguous">40</span> ambiguous). Each is tied to a quotation that a script copied from the source and then re-checked word for word.</p>
+    <p>The distance between the two lists is the main finding. It opens up in four places. Retrieval showed the model four chunks of each book, which is between 1 and 7 per cent of it. The model and the lexical tools around it were shaped mostly by Western data. The colonial English of the translations had already swapped some Indian birds and trees for European ones. And the ten-category scheme fits Indian ritual plants badly. This site lists every name text by text and sets out where each kind of bias comes in.</p>
+    <p class="keywords"><strong>Keywords:</strong> retrieval-augmented generation, AnythingLLM, Gemma 3, ecocriticism, Indian English literature, translation, flora and fauna, hallucination, algorithmic bias, digital humanities</p>
+  </div>
+</section>
+
+<!-- ================= OBJECTIVES + QUESTIONS ================= -->
+<section class="sec alt" id="aims" aria-labelledby="h-aims">
+  <div class="wrap two">
+    <div>
+      <h2 id="h-aims">Project objectives</h2>
+      <ul class="plain-list">
+        <li>Build a small, documented repository of Indian literary texts in English, with clean plain-text copies and full citations.</li>
+        <li>Run the RAG pipeline shown in class (AnythingLLM with Gemma 3 4B in LM Studio) on each text, using one detailed extraction prompt.</li>
+        <li>Extract the names of flora and fauna under the ten required categories, and keep each Indian-language name in the form the text uses.</li>
+        <li>Check every answer the model gave against the full source, and record what it got right, half right or wrong.</li>
+        <li>Describe the kinds of bias that shape both the model's answers and the texts themselves.</li>
+        <li>Publish the results as a Python file, <code>flora_fauna.py</code>, and as this website.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Research questions</h2>
+      <ol class="rq">
+        <li><span>RQ1</span> How many names of plants and animals do these texts contain, and how are they spread across the ten categories?</li>
+        <li><span>RQ2</span> How much of that list does a small RAG pipeline recover, and how often are its quotations real?</li>
+        <li><span>RQ3</span> Where does the pipeline fail: in retrieval, in the model, or in the texts and their translations?</li>
+        <li><span>RQ4</span> Which Indian names survive the move into English, and which are replaced by European ones?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CORPUS ================= -->
+<section class="sec" id="corpus" aria-labelledby="h-corpus">
+  <div class="wrap">
+    <h2 id="h-corpus">The repository of texts</h2>
+    <div class="narrow-left">
+      <p>The eight texts were chosen in class, and all eight were checked against the full text. Six are plain-text files from Project Gutenberg. I removed the Gutenberg header and licence and kept everything else, including introductions and translators' notes, because AnythingLLM was given those too. Line numbers on this site refer to these cleaned files, which sit in the repository beside this page.</p>
+      <p><em>The Bird of Time</em> (Sarojini Naidu, 1912) is not on Project Gutenberg. Its text comes from the <a href="https://scalar.lehigh.edu/literature-of-colonial-south-asia/sarojini-naidu-the-bird-of-time-songs-of-life-death--the-spring-1912-full-text" target="_blank" rel="noopener">full-text edition in <i>Literature of Colonial South Asia</i></a>, a digital archive edited by Amardeep Singh at Lehigh University, which reproduces the Wikisource transcription with Edmund Gosse's introduction. <em>The Adivasi Will Not Dance</em> (Hansda Sowvendra Shekhar, 2015) is still in copyright. I worked from a text file supplied for the project. That file is not in the repository, and the site quotes only the short passages needed to show each name.</p>
+    </div>
+    <p class="hint">Pick a book from the shelf to see its details.</p>
+    <div class="shelf" id="shelf" role="tablist" aria-label="Books in the repository"></div>
+    <div class="book-panel" id="book-panel" role="tabpanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= METHOD ================= -->
+<section class="sec alt" id="method" aria-labelledby="h-method">
+  <div class="wrap">
+    <h2 id="h-method">Method</h2>
+    <div class="narrow-left">
+      <p>The RAG pipeline demonstrated in class was run as it was set up in AnythingLLM. Its answers were then checked against the full text of each book, name by name, and every quotation on this site was copied from the source by a script and compared with it word for word.</p>
+    </div>
+
+    <h3>The RAG pipeline in AnythingLLM</h3>
+    <ol class="pipeline" id="pipeline">
+      <li><b>Upload</b><span>Each book was put into its own AnythingLLM workspace as a Gutenberg .txt file.</span></li>
+      <li><b>Chunk</b><span>AnythingLLM cut the file into pieces of about 1,000 characters.</span></li>
+      <li><b>Embed and store</b><span>Each piece became a vector in the workspace's vector database.</span></li>
+      <li><b>Retrieve</b><span>The prompt was turned into a vector, and the 4 closest pieces with a similarity of at least 0.25 were kept.</span></li>
+      <li><b>Generate</b><span>Gemma 3 4B in LM Studio read those 4 pieces with the prompt, at temperature 0.1.</span></li>
+      <li><b>Answer</b><span>The model returned two tables, one for flora and one for fauna, with quotations.</span></li>
+    </ol>
+
+    <div class="two settings-block">
+      <div>
+        <h4>Workspace settings, read from the screenshots</h4>
+        <div class="table-scroll">
+        <table class="settings">
+          <thead><tr><th scope="col">Setting</th><th scope="col">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Chat mode</td><td>Query (answers only if document context is found)</td></tr>
+            <tr><td>Workspace LLM provider</td><td>System default (LM Studio)</td></tr>
+            <tr><td>Agent model</td><td>google/gemma-3-4b</td></tr>
+            <tr><td>Temperature</td><td>0.2 for Gitanjali; 0.1 for the others</td></tr>
+            <tr><td>Chat history</td><td>20</td></tr>
+            <tr><td>Search preference</td><td>Accuracy Optimized</td></tr>
+            <tr><td>Max context snippets</td><td>4</td></tr>
+            <tr><td>Similarity threshold</td><td>Low (score of 0.25 or more)</td></tr>
+            <tr><td>System prompt</td><td>AnythingLLM default</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div>
+        <h4>What the vector counts tell us</h4>
+        <p>The vector count is the number of chunks a workspace holds. For three books I split the same Gutenberg files into 1,000-character pieces and got almost the same numbers. That confirms the chunk size, and it shows that the Project Gutenberg licence was embedded too: about 13 or 14 chunks per book are licence text.</p>
+        <div class="table-scroll">
+        <table class="settings" id="vector-table">
+          <thead><tr><th scope="col">Workspace</th><th scope="col">Vectors in AnythingLLM</th><th scope="col">My 1,000-character split</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="note">Gitanjali is the outlier. It should hold about 98 vectors and holds 2. Almost none of the book reached the model, which explains why its answer was invented. * For <i>The Bird of Time</i> I split the archive text, which has no licence pages. It gives 50 pieces against 60 in the workspace, so the file used in class was a little longer.</p>
+      </div>
+    </div>
+
+    <h4 class="gallery-title">Screenshots from the AnythingLLM workspaces</h4>
+    <p class="hint shot-note" id="shot-note">Every workspace used the same settings.</p>
+    <div class="tabs" id="shot-tabs" role="tablist" aria-label="Workspace screenshots"></div>
+    <div class="shots" id="shots"></div>
+
+    <h3>The extraction prompt</h3>
+    <div class="narrow-left">
+      <p>One long prompt was used for every book. It sets a research-assistant role, defines the ten categories with examples, demands an exact quotation and location for each name, asks the model to keep Indian-language spellings, to mark doubtful names as ambiguous, to keep generic words apart, and to say honestly how much of the book it saw. It ends with a quality-control checklist. On paper it is a strict prompt. The audit below shows how little a prompt can do when the evidence never reaches the model.</p>
+    </div>
+    <details class="prompt-box">
+      <summary>Read the full prompt</summary>
+      <div class="prompt-text" id="prompt-text"><p>Loading the prompt.</p></div>
+    </details>
+
+    <h3>Rules for what counts</h3>
+    <div class="narrow-left rules">
+      <p>I followed the prompt's own rules and wrote down every judgement call. Generic words such as tree, flower, bird or fish are listed separately and not counted. Plant parts (buds, petals, leaves, thorns) are left out. A character's name is not counted on its own, but the animal is: Shere Khan is counted under tiger, and the remark gives his name. A product is counted when its source is clear (sandalwood, cinnamon, betel-nut), and the remark says it is a product. Colour words such as "saffron footcloths" or "the raven hair" are rejected. Mythical beings (the makara, Shesha, the trees of Indra's garden, Naidu's jewelled serpent-king) are rejected, and so are brand names such as Kingfisher beer and Rajnigandha pan masala. Conches, clams, frogs and worms are real animals but fall outside the ten categories, so they are recorded under a separate heading. Names that appear only in an introduction or a translator's note are kept but flagged as paratext.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section class="sec" id="results" aria-labelledby="h-results">
+  <div class="wrap">
+    <h2 id="h-results">Results</h2>
+    <div class="stats" id="stats"></div>
+
+    <h3>Breakdown by category</h3>
+    <div class="narrow-left">
+      <p>The first chart counts unique names across the whole corpus, so a mango that grows in four books is counted once. Trees, birds and mammals lead by a long way. Herbs are almost empty, which says as much about the category as about the books (see the bias section).</p>
+    </div>
+    <div class="chart-head">
+      <div class="seg" role="radiogroup" aria-label="Count by">
+        <button type="button" role="radio" aria-checked="true" data-mode="unique">Unique across corpus</button>
+        <button type="button" role="radio" aria-checked="false" data-mode="entries">Entries text by text</button>
+      </div>
+      <div class="legend" id="cat-legend"></div>
+    </div>
+    <figure class="chart" id="cat-chart" aria-label="Bar chart of names by category"></figure>
+
+    <h3>Each text, category by category</h3>
+    <div class="narrow-left"><p>Darker cells hold more names. Select a cell to open those names in the explorer below.</p></div>
+    <figure class="chart" id="heatmap"></figure>
+
+    <h3>How many names keep an Indian-language form</h3>
+    <div class="narrow-left"><p>This is the share of each text's entries written in a Bengali, Hindi, Persian or Sanskrit form (<i>seemul</i>, <i>kokila</i>, <i>Ke[s']ara</i>, <i>Bandar-log</i>) rather than an English one. Santali forms from Shekhar's stories (<i>matkom</i>, <i>sim-jill</i>) count too. <span data-n="vern-total">89</span> of <span data-n="entries">509</span> entries, about one in six, keep such a form.</p></div>
+    <figure class="chart" id="vern-chart"></figure>
+
+    <h3 id="explorer-h">Flora and fauna, text by text</h3>
+    <div class="narrow-left"><p>Every entry is here, with its exact quotation and its place in the book. Use the list view to see each text's names grouped by category, or the evidence view to read the quotations.</p></div>
+    <div class="explorer" id="explorer">
+      <div class="filters" role="group" aria-label="Filters">
+        <label>Text
+          <select id="f-text"><option value="">All eight texts</option></select></label>
+        <label>Category
+          <select id="f-cat"><option value="">All categories</option></select></label>
+        <label>Status
+          <select id="f-status"><option value="">Verified and ambiguous</option><option>Verified</option><option>Ambiguous</option></select></label>
+        <label>Setting
+          <select id="f-set"><option value="">Any setting</option><option value="india">Indian setting</option><option value="other">Non-Indian or mixed</option></select></label>
+        <label class="check"><input type="checkbox" id="f-vern"> Indian-language form only</label>
+        <label class="search">Search
+          <input type="search" id="f-q" placeholder="lotus, koel, Baloo, Bombax"></label>
+      </div>
+      <div class="view-row">
+        <div class="seg" role="radiogroup" aria-label="View">
+          <button type="button" role="radio" aria-checked="true" data-view="list">List by text</button>
+          <button type="button" role="radio" aria-checked="false" data-view="cards">Evidence</button>
+        </div>
+        <p class="count" id="f-count" aria-live="polite"></p>
+        <button type="button" class="linkish" id="f-reset">Clear filters</button>
+      </div>
+      <div id="ex-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AUDIT ================= -->
+<section class="sec alt" id="audit" aria-labelledby="h-audit">
+  <div class="wrap">
+    <h2 id="h-audit">Auditing the AnythingLLM answers</h2>
+    <div class="narrow-left">
+      <p>Each row the model returned was checked against the full text and given one verdict. <b>Correct</b> means a real name, a sensible category and a genuine quotation that supports it. <b>Partly correct</b> means the name is real but something else is wrong: the quotation, the category, the location or the identification. <b>Fabricated or unsupported</b> means the name or the quotation is not in the book, or no evidence was given. <b>Not flora or fauna</b> means a person, place, object or plant part was filed as an organism. <b>Generic</b> means a word like "trees" or "insects" was given as if it were a species.</p>
+    </div>
+    <div class="legend" id="audit-legend"></div>
+    <figure class="chart" id="audit-chart"></figure>
+
+    <h3>Seven moments from the audit</h3>
+    <div class="cases" id="cases">
+      <article class="case">
+        <h4>Gitanjali: deer that were never there</h4>
+        <p class="said">"The deer graze peacefully in the meadow." <span>Poem II.5, according to the model</span></p>
+        <p>There are no deer or cattle anywhere in Gitanjali, and none of the model's fifteen quotations occurs in the book. The workspace held 2 vectors instead of about 98, so the model had almost nothing to read and wrote a plausible nature poem instead. Deer and cows are both examples in the prompt.</p>
+      </article>
+      <article class="case">
+        <h4>Toru Dutt: the silk-cotton tree read as a creeper</h4>
+        <p class="said">"Seemuls: Plant (Uncertain, likely a local vine/creeper)"</p>
+        <p>The quotation was real: "o'er the quiet pools the seemuls lean, / Red,--red, and startling like a trumpet's sound." The seemul is the Bengali <i>shimul</i>, the silk-cotton tree, whose red flowers open on bare branches. The model could not place a Bengali tree name and guessed.</p>
+      </article>
+      <article class="case">
+        <h4>The Jungle Book: chapters that do not exist</h4>
+        <p class="said">"Chil / Rann ... Brahminy Kite (Haliaeetus leucoryphus) ... The Fall Wind"</p>
+        <p>"The Spring Hunts", "The Fall Wind" and "Mogli Can See" are not chapters of the book. Chil belongs to <i>The Second Jungle Book</i>. The Latin name is Pallas's fish eagle, and "Ursus sloth" is not a species at all. The dhak tree is in the text, one line away from the quotation the model chose.</p>
+      </article>
+      <article class="case">
+        <h4>Sarojini Naidu: the koel becomes a weaverbird</h4>
+        <p class="said">"Kokila: Bird, Weaverbird"</p>
+        <p>The line "A kokila called from a henna-spray" is genuine. But the kokila is the Asian koel, a cuckoo and the most familiar songbird in Indian poetry. The model also "implied" sharks and leaping fish in "Coromandel Fishers". Neither is in the poem.</p>
+      </article>
+      <article class="case">
+        <h4>Sarojini Naidu again: Gosse's robins</h4>
+        <p class="said">"Robins: Flower ... Skylarks: Flower"</p>
+        <p>For <i>The Bird of Time</i> every quotation the model gave comes from Edmund Gosse's introduction, not from the poems. That is where Gosse tells the young Naidu to "write no more about robins and skylarks". The model listed both as flowers. The poems themselves name the koel, the papeeha, the bulbul and the champak, and not one of the nineteen rows was fully correct.</p>
+      </article>
+      <article class="case">
+        <h4>The Adivasi Will Not Dance: people as animals</h4>
+        <p class="said">"villagers: Mammals ... cricketers: Birds ... gutkha: Insects"</p>
+        <p>The quotations are all genuine, but every row is a category error. A "treker" (a shared passenger jeep) became a mammal, the word Adivasi became a herb, and chewing tobacco became an insect. The stories name sal, mahua, tendu, the Santali <i>matkom</i>, the krait, rui and katla. None of them reached the table.</p>
+      </article>
+      <article class="case">
+        <h4>Sakoontala: a river taken for a tree</h4>
+        <p class="said">"Máliní: Trees, Willow" and "No mammal references found."</p>
+        <p>The Máliní is the river beside Kanwa's hermitage. The play opens with the king chasing an antelope, and the fauna table says there are no mammals, birds, reptiles, fish or insects at all. The asoka was glossed as the Bodhi tree.</p>
+      </article>
+    </div>
+
+    <details class="audit-table-box">
+      <summary>See all <span data-n="allm-rows">106</span> rows with verdicts</summary>
+      <div class="filters small">
+        <label>Text <select id="a-text"><option value="">All eight texts</option></select></label>
+        <label>Verdict <select id="a-verdict"><option value="">All verdicts</option></select></label>
+      </div>
+      <div class="table-scroll"><table class="audit-table" id="audit-table">
+        <thead><tr><th scope="col">Text</th><th scope="col">Name given</th><th scope="col">Category given</th><th scope="col">Quotation given</th><th scope="col">Verdict</th><th scope="col">What the full text shows</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= BIAS ================= -->
+<section class="sec" id="bias" aria-labelledby="h-bias">
+  <div class="wrap narrow">
+    <h2 id="h-bias">Bias: where the Indian names get lost</h2>
+    <p class="lead">Models like Gemma learn from web-scale data, and on the web English and Western sources far outnumber Indian ones. The books here are Indian. That mismatch matters, but it is not the only source of bias. Bias enters at several points before the model ever answers, and some of it was already in the books a century ago.</p>
+
+    <h3>1. The model's training data</h3>
+    <p>Google has not published a full breakdown of Gemma 3's training data, so I cannot measure this directly. The errors, though, lean one way. When the model met a name it did not know, it reached for a Western or pan-Asian default. The kokila became a "Weaverbird". The asoka became the "Bodhi Tree". The seemul became "a local vine". The Máliní river became a willow. The unidentified <i>dhadikulas</i> became "Songbirds/Larks". In Gitanjali, with no text to read, it produced swans and birds of paradise, the stock birds of English nature writing. Not one of its guesses went the other way, towards an Indian name.</p>
+
+    <h3>2. The lexical tools</h3>
+    <p>I used WordNet, the standard English lexical database, to find candidates. It knows <i>banyan</i>, <i>peepul</i>, <i>neem</i>, <i>palmyra</i> and <i>betel</i>. It does not know <i>kokila</i>, <i>koel</i>, <i>seemul</i>, <i>babla</i>, <i>tulsi</i>, <i>asoka</i>, <i>champak</i>, <i>sirish</i>, <i>sal</i>, <i>sambhur</i>, <i>mahseer</i>, <i>kusha</i>, <i>keora</i>, <i>kadam</i>, <i>amla</i> or <i>papiya</i>. It read "paddy" (as in "paddy birds", the pond heron) as a grain and "Nag" as a horse. A pipeline that relies on such a resource without a second net will lose the Indian names first. I caught them only because I listed the words WordNet did not know and read them one by one.</p>
+
+    <h3>3. The English of the books</h3>
+    <p>Some of the bias was in the texts long before any model. Tagore's own translation of Gitanjali gives "the cuckoo" where the Bengali bird is almost certainly the koel. Toru Dutt fills a Bengal forest with nightingales, rooks and a roebuck, none of which lives there, and calls a langur in her garden a "grey baboon". Kipling calls the musk shrew, <i>chuchundar</i>, a "musk-rat". A Bombay playbill of 1855, quoted in Monier-Williams's introduction, glosses the black bee, <i>bhramar</i>, as "(fly)". Monier-Williams measures the asoka against "an ordinary cherry-tree", likens the Indian roller to "our jay", and gives the tree as <i>Jonesia Asoka</i>, a genus named after the British orientalist Sir William Jones. The "our" in "our jay" is a European reader. A model trained on English inherits that point of view, and the books hand it over again.</p>
+
+    <h3>4. Retrieval and the prompt</h3>
+    <p>With four chunks, a model sees between one and seven per cent of a book (four out of the 60 to 323 vectors in the workspaces). Everything else is invisible to it, and a strict prompt cannot change that. The prompt itself also nudged the answers. Its examples (banyan, peepal, neem, mango, sal, mahua, coconut, bamboo; elephant, tiger, deer, cow) were meant as illustrations. But the hallucinated rows match them closely: deer and cattle in Gitanjali, a sal tree in <i>The Jungle Book</i>, an "implied" deer in Toru Dutt. When the evidence is thin, examples in a prompt become answers.</p>
+
+    <h3>5. The categories</h3>
+    <p>The ten categories follow European natural history. They work well for mammals and birds. They work badly for Indian ritual plants. Across eight books only four names fit "Herbs": <i>tulsi</i>, <i>kusha</i> grass, <i>usira</i> (vetiver) and Naidu's "basil-wreath", which may or may not be tulsi. Kusha is a grass and a sacred object at once. The conch, which sounds through Gitanjali, Toru Dutt, Tagore's letters and Kipling, is not a plant or one of the five animal classes, so the scheme has nowhere to put it. Where a category is missing, the culture it carries goes missing too.</p>
+
+    <h3>6. The archive</h3>
+    <p>The corpus is all in English. Three of the eight texts come from Bengal's educated elite (two by Tagore, one by Toru Dutt), and two are by Naidu. One is by a British imperial writer, and one is a Sanskrit play in a Victorian scholar's translation. The only text by an Adivasi writer is the only one still in copyright. It could be checked here because a copy was supplied, but it cannot sit in the repository beside the others. It is also the text with the highest share of Indian-language names (31 per cent), and the one where the model found no real plant or animal at all. Free archives hold what is old enough to be free, and that means colonial-era English. A study built on them will keep finding the colonial voice, unless other voices are added on purpose.</p>
+
+    <h3>7. Setting</h3>
+    <p>Not everything in an "Indian" book is Indian. Two stories in <i>The Jungle Book</i> are set in the Bering Sea, so 27 of its rows (seals, walrus, halibut, puffins) are tagged as non-Indian or mixed. Naidu's Persian court poems bring hyacinths, tulips, orioles and peach groves, and Gosse's introduction to <i>The Bird of Time</i> brings English robins, skylarks and a lily of the valley. Tagore's letters drift into an Arabian Nights daydream of date groves and nightingales. The explorer lets you filter these out.</p>
+
+    <h3>8. My own choices</h3>
+    <p>The checking track has its own bias, and it is mine. I decided what counts as generic, which senses to exclude and which names to merge. The English and Latin names in the second column come from standard botany and zoology, not from the texts. That breaks the prompt's rule against outside knowledge, so those names are kept in a separate column and every doubtful one is marked ambiguous. A second reader would make some different calls.</p>
+  </div>
+</section>
+
+<!-- ================= ANALYSIS & DISCUSSION ================= -->
+<section class="sec alt" id="discussion" aria-labelledby="h-disc">
+  <div class="wrap narrow">
+    <h2 id="h-disc">Analysis and discussion</h2>
+
+    <h3>What the books contain</h3>
+    <p><i>The Jungle Book</i> (99 entries), Toru Dutt's <i>Ancient Ballads</i> (82), <i>Sakoontala</i> (72) and <i>The Bird of Time</i> (70) are the richest. Gitanjali is the sparest, with 18. Its world is mostly light, sky and song, and the few named plants (the banyan, the neem, the babla) appear at the edges of a single afternoon in Poem 54.</p>
+    <p>Each book has its own ecology. Tagore's letters from the family estates are the most agricultural: rice sown on silt, jute carried to market, sugar-cane along the Ichamati, and buffaloes in the shallows. They show rural Bengal from a landlord's houseboat. Toru Dutt's poems "Buttoo" and "Baugmaree" read like a catalogue of a Bengal garden, with sal, tamarind, neem, seemul, champak, nagessur and sirish set side by side. She writes them in Bengali forms, then lets English stock birds into the same lines. Naidu's Hyderabad mixes the Indian (champa, koil, neem, henna) with the Persian (hyacinth, tulip, nightingale). In <i>The Bird of Time</i> she goes further into Hindustani names, the koel, the <i>papeeha</i> and the gulmohur, and glosses the papeeha's call herself. Shekhar's Santhal world is a working one: sal and tendu leaves and mahua blossoms gathered for the market, rice planted by migrant families on zamindars' farms in Bardhaman, rui and katla haggled over at the fish stall, and silver carp marinated with turmeric. In <i>Sakoontala</i> plants and animals are kin. The heroine says goodbye to her jasmine and her pet fawn as if to sisters, and the sacred kusha grass marks every ritual.</p>
+    <p>Kipling is a special case. His animals carry Hindi names as personal names: Baloo (<i>bhalu</i>, bear), Hathi (elephant), the Bandar-log (monkey people), Nag (cobra), Darzee (tailor) and Chuchundra (musk shrew). The Indian word survives, but as a character's name rather than as the ordinary name of a species. That is why <i>The Jungle Book</i> has the lowest share of Indian-language forms, 10 per cent. <i>The Adivasi Will Not Dance</i> has the highest, 31 per cent, followed by <i>Sakoontala</i> at 26.</p>
+
+    <h3>What the pipeline did</h3>
+    <p>Across the eight texts, the model returned 67 rows that hold a real name, against 469 verified entries. When the retrieved chunks happened to hold names, it did reasonably well: seven correct rows each for Toru Dutt's sonnets and Tagore's letters. When they did not, it filled the gap. It did so politely and in the exact format the prompt asked for, with section numbers, quotation marks and a note on limitations. That polish is the danger. An answer that looks like a careful scholar's work is easy to trust and hard to check.</p>
+    <p>Most of the failure starts before generation. The Gitanjali workspace barely held the book. The other workspaces held it, but showed the model four chunks out of 60 to 323. A larger model would quote more accurately from the same four chunks. It would still not see the remaining 93 to 99 per cent of the book.</p>
+
+    <h3>What would make it better</h3>
+    <p>Three changes would help most. First, query each category separately, so that the pipeline retrieves many small, targeted sets of chunks rather than one. Second, add a lexicon of Indian names (Bengali, Hindi, Sanskrit and Anglo-Indian) to the search, so that <i>kokila</i> and <i>seemul</i> are looked for on purpose. Third, never accept a quotation without checking it against the source. <code>rag_pipeline.py</code> includes that check, and it would have flagged every invented quotation in this audit within seconds.</p>
+  </div>
+</section>
+
+<!-- ================= LIMITATIONS + CONCLUSION ================= -->
+<section class="sec" id="limitations" aria-labelledby="h-lim">
+  <div class="wrap two">
+    <div>
+      <h2 id="h-lim">Limitations</h2>
+      <ul class="plain-list">
+        <li><i>The Adivasi Will Not Dance</i> is in copyright. Its file is not shared, so readers cannot check its line numbers from this site, only its quotations against a printed copy.</li>
+        <li><i>The Bird of Time</i> was checked against a Wikisource transcription, not the 1912 printing. Small differences of spelling or punctuation are possible.</li>
+        <li>All texts are English versions. I did not compare the Bengali or Sanskrit originals, so I cannot say what the translators changed in every case.</li>
+        <li>One person did the checking. There is no second annotator and no agreement score.</li>
+        <li>Each book was queried once. Language models vary from run to run, and I did not repeat the queries.</li>
+        <li>Plain-text files have no page numbers, so locations are given by section and line number in the cleaned files.</li>
+        <li>WordNet and my word lists may still have missed a name. A rare word that is also a common English word could slip through both nets.</li>
+        <li>The line between a generic word and a named kind (grass, palm, snake) is a judgement call, and other readers might draw it elsewhere.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Conclusion</h2>
+      <p>The eight books are full of Indian plants and animals, named in Bengali, Sanskrit, Hindi, Persian and colonial English. A small RAG pipeline, run with a strict prompt, found about one name in seven. It also invented quotations, mislabelled Indian species with Western ones, and filed people and products as animals.</p>
+      <p>The fault is not only the model's. Retrieval showed it too little of each book. The lexical tools did not know the Indian names. Some translations had already changed them, and the categories had no place for ritual plants and shells. For Indian cultural material, a RAG answer is a set of leads to check, not a result. The verified lists on this site, and the quotations behind them, are the result.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REFERENCES + CITE ================= -->
+<section class="sec alt" id="cite" aria-labelledby="h-cite">
+  <div class="wrap">
+    <h2 id="h-cite">Sources and citation</h2>
+    <h3>Cite the texts</h3>
+    <div class="narrow-left"><p>Six texts are cited from their Project Gutenberg plain-text editions, <i>The Bird of Time</i> from the Lehigh archive, and <i>The Adivasi Will Not Dance</i> from its print edition, each with the original date of publication. Choose a text and a style, then copy.</p></div>
+    <div class="citer" id="text-citer">
+      <div class="filters small">
+        <label>Text <select id="ct-text"></select></label>
+      </div>
+      <div class="tabs" id="ct-styles" role="tablist" aria-label="Citation style for the text"></div>
+      <div class="cite-out"><p id="ct-out"></p><button type="button" class="copy" data-target="ct-out">Copy</button></div>
+    </div>
+
+    <h3>Cite this project</h3>
+    <div class="citer" id="proj-citer">
+      <div class="tabs" id="cp-styles" role="tablist" aria-label="Citation style for this project"></div>
+      <div class="cite-out"><p id="cp-out"></p><button type="button" class="copy" data-target="cp-out">Copy</button></div>
+    </div>
+
+    <h3>Works cited</h3>
+    <ul class="refs" id="refs"></ul>
+    <ul class="refs">
+      <li>Bender, Emily M., Timnit Gebru, Angelina McMillan-Major and Shmargaret Shmitchell. 2021. "On the Dangers of Stochastic Parrots: Can Language Models Be Too Big?" In <i>Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency</i>, 610-623. New York: ACM.</li>
+      <li>Gemma Team, Google DeepMind. 2025. "Gemma 3 Technical Report." arXiv:2503.19786.</li>
+      <li>Lewis, Patrick, Ethan Perez, Aleksandra Piktus, et al. 2020. "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." <i>Advances in Neural Information Processing Systems</i> 33: 9459-9474.</li>
+      <li>LM Studio. <i>LM Studio</i>. Desktop application for running local language models. https://lmstudio.ai.</li>
+      <li>Miller, George A. 1995. "WordNet: A Lexical Database for English." <i>Communications of the ACM</i> 38 (11): 39-41.</li>
+      <li>Mintplex Labs. <i>AnythingLLM</i>. Desktop application. https://anythingllm.com.</li>
+      <li>Project Gutenberg. https://www.gutenberg.org. Six of the eight texts were taken from Project Gutenberg in plain-text (.txt) format.</li>
+      <li>Singh, Amardeep, ed. <i>Literature of Colonial South Asia: A Digital Archive</i>. Lehigh University, Scalar. https://scalar.lehigh.edu/literature-of-colonial-south-asia/.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= AUTHOR ================= -->
+<section class="sec" id="author" aria-labelledby="h-author">
+  <div class="wrap">
+    <h2 id="h-author">Author</h2>
+    <div class="author">
+      <figure class="portrait"><img src="simanta-nandi.jpg" alt="Simanta Nandi, smiling, in a white shirt with handwritten script printed on it" width="260" height="325" loading="lazy"></figure>
+      <div class="bio">
+        <h3>Simanta Nandi</h3>
+        <p class="role">MA, Digital Humanities and Social Sciences, IIT (ISM) Dhanbad</p>
+        <p>Simanta is an MA student in Digital Humanities and Social Sciences at IIT (ISM) Dhanbad. He completed the Summer Research Internship Programme 2026 at IIST Thiruvananthapuram, working on preserving cultural narratives, and holds a BA in Comparative Literature from Jadavpur University via CENTIL. He has taken part in the 15-day UNESCO World Heritage Education Programme at Visva-Bharati and a British Library archival-digitisation workshop run with ILSR. His article, "Impact of Popular Culture and Media on Literary Reception in the Northeast of India", appears in <i>Re-imagining Northeast Writing and Narratives: Language, Culture and Border Identities</i> (Jamia Millia Islamia, 2024). His research interests span digital archiving, cultural heritage, AI for the humanities, electronic literature and digital memory studies. He was recognised by Oxford University Press India in 2021.</p>
+        <p class="contact">
+          <a href="https://about.me/simantanandi" target="_blank" rel="noopener">about.me/simantanandi</a>
+          <a href="mailto:25ma0013@iitism.ac.in">25ma0013@iitism.ac.in</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="supervision">
+      <h3>Project supervision</h3>
+      <ul>
+        <li><a href="https://shanmugapriya.com/" target="_blank" rel="noopener">Shanmugapriya T</a></li>
+        <li><a href="https://linktr.ee/sourav.dh.litcult" target="_blank" rel="noopener">Sourav Ghosh</a></li>
+      </ul>
+    </div>
+
+    <div class="licence">
+      <h3>Licence</h3>
+      <p>This website, its data and its code are released under the <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-NonCommercial 4.0 International licence (CC BY-NC 4.0)</a>. You may share and adapt the material for non-commercial purposes, as long as you credit the author. Seven of the literary texts are in the public domain. <i>The Adivasi Will Not Dance</i> remains in copyright with its author and Speaking Tiger. It is quoted here only briefly, for criticism and review, and is not covered by this licence.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Extraction of Indian Cultural Elements Using RAG. Simanta Nandi, Monsoon Semester 2026. Department of Humanities and Social Sciences, Indian Institute of Technology (Indian School of Mines) Dhanbad.</p>
+    <p>CC BY-NC 4.0. Public-domain texts from Project Gutenberg and Wikisource. <a href="https://github.com/SimantaDH/rag" target="_blank" rel="noopener">Code on GitHub</a>. <a href="#top">Back to the top</a></p>
+  </div>
+</footer>
+
+<a class="to-top" id="to-top" href="#top" aria-label="Back to the top" title="Back to the top"><span aria-hidden="true">&uarr;</span></a>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="lb-close" aria-label="Close the screenshot">Close</button>
+  <img alt="">
+  <p class="lb-cap"></p>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
