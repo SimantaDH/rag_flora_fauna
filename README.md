@@ -19,10 +19,11 @@ Every file sits at the top level, so GitHub Pages can serve the site straight fr
 | `data.js` | All results used by the website (entities, quotations, audit) |
 | `flora_fauna.py` | The assignment file: verified flora and fauna for all eight texts in the ten categories, text by text, with evidence |
 | `rag_pipeline.py` | Rebuilds the chunking and top-4 retrieval, sends a prompt to LM Studio, and checks quotations |
-| `prompt.md` | The extraction prompt used in AnythingLLM |
+| `prompt_primary.md` | Prompt 1: the primary extraction prompt, tried first in the same form for every book |
+| `prompt_custom.md` | Prompt 2: the customised prompt used for all eight books. Its structure is fixed and three bracketed parts are filled in for each book; the version shown is the one written for Sarojini Naidu, as a sample |
 | `gitanjali.txt`, `ancient_ballads.txt`, `jungle_book.txt`, `golden_threshold.txt`, `glimpses_of_bengal.txt`, `sakoontala.txt` | The six Project Gutenberg texts with the Gutenberg header and licence removed |
 | `bird_of_time.txt` | The Bird of Time, from the Wikisource text in *Literature of Colonial South Asia* (Lehigh University) |
-| `allm-*.png` | Screenshots of the AnythingLLM workspace settings |
+| `allm-*.png` | Screenshots of the settings of all eight AnythingLLM workspaces (chat, vector database, agent) |
 | `simanta-nandi.jpg`, `favicon.svg` | Images |
 | `.nojekyll` | Tells GitHub Pages to serve the files as they are |
 

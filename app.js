@@ -205,7 +205,7 @@ var CONFIG = {
       ['Author', b.author + (b.role ? ', ' + b.role : '')], ['First published', b.first], ['Form', b.genre], ['Setting', b.setting],
       ['Also in the file', b.paratext || 'None'],
       ['Source', b.pg ? 'Project Gutenberg eBook #' + b.pg + ' (' + b.pgdate + '), plain text' : (b.src || '')],
-      ['AnythingLLM workspace', b.allm ? b.allm.workspace + ', ' + b.allm.vectors + ' vectors, temperature ' + b.allm.temperature : (b.audit_rows ? 'Same settings as the others; no screenshot of its own' : 'Not run')],
+      ['AnythingLLM workspace', b.allm ? b.allm.workspace + ', ' + (b.allm.vectors ? b.allm.vectors + ' vectors' : '0 vectors in the screenshot (taken after the run)') + ', temperature ' + b.allm.temperature : 'Not run'],
       ['Words in the cleaned file', b.words ? b.words.toLocaleString('en-GB') : 'Not available']
     ];
     var status = '<span class="status-pill ok">Checked against the full text</span> &nbsp;' + b.entities.length + ' entries: ' + b.verified + ' verified, ' + b.ambiguous + ' ambiguous';
@@ -228,15 +228,13 @@ var CONFIG = {
     return '<tr><td>' + esc(v[0]) + '</td><td class="num">' + v[1] + '</td><td class="num">' + (v[2] == null ? 'No file' : v[2]) + '</td></tr>';
   }).join('');
 
-  /* ---------- screenshots ---------- */
-  // The last three workspaces were run with the same settings but have no screenshots of their own,
-  // so their tabs reuse the screenshots of another workspace, in turn, and say so in the caption.
+  /* ---------- screenshots: one tab per workspace ---------- */
+  // [tab label, image key, workspace identifier, vector count shown, temperature]
   var SHOTS = [
-    ['Gitanjali', 'gitanjali'], ['Ancient Ballads', 'ballads'], ['The Jungle Book', 'junglebook'], ['The Bird of Time', 'birdoftime'], ['The Golden Threshold', 'threshold'],
-    ['Glimpses of Bengal', 'ballads', 'Ancient Ballads'], ['The Adivasi Will Not Dance', 'junglebook', 'The Jungle Book'], ['Sakoontala', 'threshold', 'The Golden Threshold']
+    ['Gitanjali', 'gitanjali', 'sim-4', 2, '0.2'], ['Ancient Ballads', 'ballads', 'sim5', 165, '0.1'], ['The Jungle Book', 'junglebook', 'sim6', 323, '0.1'],
+    ['The Bird of Time', 'birdoftime', 'sim-7', 60, '0.1'], ['The Golden Threshold', 'threshold', 'sim-8', 71, '0.1'],
+    ['Glimpses of Bengal', 'glimpses', 'indian-literary-texts-rag', 0, '0.7'], ['The Adivasi Will Not Dance', 'adivasi', 'sim2', 0, '0.3'], ['Sakoontala', 'sakoontala', 'sim-4', 0, '0.3']
   ];
-  var VEC = { gitanjali: 2, ballads: 165, junglebook: 323, birdoftime: 60, threshold: 71 };
-  var TEMP = { gitanjali: '0.2', ballads: '0.1', junglebook: '0.1', birdoftime: '0.1', threshold: '0.1' };
   var shotTabs = $('#shot-tabs'), shots = $('#shots');
   SHOTS.forEach(function (s, i) {
     var b = el('button', { type: 'button', role: 'tab', 'aria-selected': i === 0 ? 'true' : 'false' }, esc(s[0]));
@@ -244,19 +242,15 @@ var CONFIG = {
     shotTabs.appendChild(b);
   });
   function showShots(s) {
-    var k = s[1], reused = s[2];
-    var items = reused ? [
-      ['allm-' + k + '-chat.png', 'Chat settings: Query mode, default system prompt, temperature 0.1. Screenshot reused from the workspace for ' + reused + '.'],
-      ['allm-' + k + '-vector.png', 'Vector database: 4 context snippets, similarity threshold 0.25. Screenshot reused from the workspace for ' + reused + ', so the vector count shown is not this book\'s.'],
-      ['allm-' + k + '-agent.png', 'Agent configuration: LM Studio serving google/gemma-3-4b. Screenshot reused from the workspace for ' + reused + '.']
-    ] : [
-      ['allm-' + k + '-chat.png', 'Chat settings: Query mode, default system prompt, temperature ' + TEMP[k] + '.'],
-      ['allm-' + k + '-vector.png', 'Vector database: ' + VEC[k] + ' vectors, 4 context snippets, similarity threshold 0.25.'],
+    var k = s[1], empty = s[3] === 0;
+    var items = [
+      ['allm-' + k + '-chat.png', 'Chat settings: Query mode, chat history 20, default system prompt, temperature ' + s[4] + '.'],
+      ['allm-' + k + '-vector.png', 'Vector database "' + s[2] + '": ' + s[3] + ' vectors' + (empty ? ' at the time of the screenshot' : '') + ', 4 context snippets, similarity threshold 0.25.'],
       ['allm-' + k + '-agent.png', 'Agent configuration: LM Studio serving google/gemma-3-4b.']
     ];
-    $('#shot-note').textContent = reused
-      ? s[0] + ' was run with the same settings as the other workspaces. No screenshots of its own were taken, so the ones below are reused from the workspace for ' + reused + '.'
-      : 'Every workspace used the same settings. Select a screenshot to enlarge it.';
+    $('#shot-note').textContent = empty
+      ? 'This screenshot shows 0 vectors, but the workspace answered with genuine quotations from the book, so the book must have been embedded when the prompt ran and removed before the screenshot was taken. ' + (k === 'sakoontala' ? 'Its identifier, sim-4, is the same as the Gitanjali workspace\'s.' : '')
+      : 'All eight workspaces share the same retrieval settings. Select a screenshot to enlarge it.';
     shots.innerHTML = items.map(function (it) {
       return '<figure><button type="button" data-src="' + it[0] + '" data-cap="' + esc(s[0] + '. ' + it[1]) + '" aria-label="Enlarge: ' + esc(it[1]) + '"><img src="' + it[0] + '" alt="AnythingLLM screenshot for ' + esc(s[0]) + ': ' + esc(it[1]) + '" loading="lazy"></button><figcaption>' + esc(it[1]) + '</figcaption></figure>';
     }).join('');
@@ -279,9 +273,9 @@ var CONFIG = {
     li.addEventListener('mouseleave', function () { li.classList.remove('lit'); });
   });
 
-  /* ---------- the prompt (small markdown reader) ---------- */
-  (function () {
-    var lines = D.prompt.split('\n'), out = [], list = null, table = null;
+  /* ---------- the two prompts (small markdown reader) ---------- */
+  function renderPrompt(src, target) {
+    var lines = src.split('\n'), out = [], list = null, table = null;
     function inline(s) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
     function flush() { if (list) { out.push('</' + list + '>'); list = null; } if (table) { out.push('</tbody></table></div>'); table = null; } }
     lines.forEach(function (l) {
@@ -303,8 +297,10 @@ var CONFIG = {
       else { flush(); out.push('<p>' + inline(t) + '</p>'); }
     });
     flush();
-    $('#prompt-text').innerHTML = out.join('');
-  })();
+    $(target).innerHTML = out.join('');
+  }
+  renderPrompt(D.prompts.primary, '#prompt-primary');
+  renderPrompt(D.prompts.custom, '#prompt-custom');
 
   /* =========================================================
      RESULTS

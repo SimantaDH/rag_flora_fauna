@@ -37,7 +37,7 @@ Usage
     python rag_pipeline.py verify answer.md jungle_book   # check quotations in a saved answer
 
 Put the corpus files (gitanjali.txt, ancient_ballads.txt, ...) and
-prompt.md in the same folder as this script, or pass --dir. A book whose
+prompt_primary.md (the primary prompt) in the same folder as this script, or pass --dir. A book whose
 file is missing is skipped. The Adivasi Will Not Dance is in copyright,
 so adivasi.txt is not shared in the repository; add your own copy.
 """
@@ -57,7 +57,7 @@ CHUNK_SIZE = 1000          # characters (AnythingLLM text splitter default)
 CHUNK_OVERLAP = 20         # characters
 TOP_K = 4                  # "Max Context Snippets"
 MIN_SCORE = 0.25           # "Document similarity threshold: Low (>= .25)", applied to normalised scores
-TEMPERATURE = 0.1          # 0.2 for the Gitanjali workspace
+TEMPERATURE = 0.1          # 0.2 Gitanjali; 0.3 Adivasi, Sakoontala; 0.7 Glimpses of Bengal
 LM_STUDIO_URL = "http://localhost:1234/v1/chat/completions"
 MODEL = "google/gemma-3-4b"
 SYSTEM_PROMPT = ("Given the following conversation, relevant context, and a follow up question, "
@@ -207,7 +207,7 @@ def reachable(entity, chunks):
 
 
 def experiment(folder):
-    prompt = load_text(os.path.join(folder, "prompt.md"))
+    prompt = load_text(os.path.join(folder, "prompt_primary.md"))
     results = {}
     for key, title in BOOKS.items():
         path = os.path.join(folder, key + ".txt")
@@ -250,7 +250,7 @@ def main():
         book = a.args[0]
         text = load_text(os.path.join(a.dir, book + ".txt"))
         chunks = chunk_text(text)
-        prompt = load_text(os.path.join(a.dir, "prompt.md"))
+        prompt = load_text(os.path.join(a.dir, "prompt_primary.md"))
         ctx = retrieve(BM25([c["text"] for c in chunks]), chunks, prompt)
         answer = generate(ctx, prompt)
         print(answer)

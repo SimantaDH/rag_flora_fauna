@@ -71,9 +71,9 @@
   <div class="wrap narrow">
     <h2 id="h-abstract">Abstract</h2>
     <p class="lead">This project asks a plain question. When a small language model reads Indian literature through a retrieval-augmented generation (RAG) pipeline, can it tell us which plants and animals the texts name?</p>
-    <p>I built a repository of eight Indian literary texts in English: six public-domain files from Project Gutenberg, Naidu's <i>The Bird of Time</i> from Wikisource, and Hansda Sowvendra Shekhar's <i>The Adivasi Will Not Dance</i>, which is still in copyright. Each one went into AnythingLLM and was queried with Google's Gemma 3 4B, running on my own machine through LM Studio. The prompt asked for every tree, plant, flower, herb and crop, and every mammal, bird, reptile, fish and insect, each backed by an exact quotation.</p>
+    <p>I built a repository of eight Indian literary texts in English: six public-domain files from Project Gutenberg, Naidu's <i>The Bird of Time</i> from Wikisource, and Hansda Sowvendra Shekhar's <i>The Adivasi Will Not Dance</i>, which is still in copyright. Each one went into AnythingLLM and was queried with Google's Gemma 3 4B, running on my own machine through LM Studio. A primary prompt asked for every tree, plant, flower, herb and crop, and every mammal, bird, reptile, fish and insect, each backed by an exact quotation. That prompt did not work well, so I wrote a second prompt with a fixed structure and filled it in for each book with its author, its title, a note on what it contains and examples from it. The answers audited on this site come from this customised prompt, used for all eight books.</p>
     <p>The answers looked careful, but most were not right. Of the <span data-n="allm-rows">106</span> rows the model returned, only <span data-n="allm-correct">19</span> were fully correct. Many of its quotations do not exist in the books. Some of its "animals" were people, a passenger jeep and chewing tobacco. To find out what the texts really contain, I read every candidate name against the full text of all eight books, using WordNet only to suggest candidates. The result is <span data-n="entries">509</span> text-level entries (<span data-n="verified">469</span> verified and <span data-n="ambiguous">40</span> ambiguous). Each is tied to a quotation that a script copied from the source and then re-checked word for word.</p>
-    <p>The distance between the two lists is the main finding. It opens up in four places. Retrieval showed the model four chunks of each book, which is between 1 and 7 per cent of it. The model and the lexical tools around it were shaped mostly by Western data. The colonial English of the translations had already swapped some Indian birds and trees for European ones. And the ten-category scheme fits Indian ritual plants badly. This site lists every name text by text and sets out where each kind of bias comes in.</p>
+    <p>The distance between the two lists is the main finding. It opens up in four places. Retrieval showed the model four chunks of each book, which is between 1 and 7 per cent of it. The model and the lexical tools around it were shaped mostly by Western data. The colonial English of the translations had already swapped some Indian birds and trees for European ones. The customised prompt planted some of its own examples in the answers. And the ten-category scheme fits Indian ritual plants badly. This site lists every name text by text and sets out where each kind of bias comes in.</p>
     <p class="keywords"><strong>Keywords:</strong> retrieval-augmented generation, AnythingLLM, Gemma 3, ecocriticism, Indian English literature, translation, flora and fauna, hallucination, algorithmic bias, digital humanities</p>
   </div>
 </section>
@@ -85,7 +85,7 @@
       <h2 id="h-aims">Project objectives</h2>
       <ul class="plain-list">
         <li>Build a small, documented repository of Indian literary texts in English, with clean plain-text copies and full citations.</li>
-        <li>Run the RAG pipeline shown in class (AnythingLLM with Gemma 3 4B in LM Studio) on each text, using one detailed extraction prompt.</li>
+        <li>Run the RAG pipeline shown in class (AnythingLLM with Gemma 3 4B in LM Studio) on each text, first with a primary extraction prompt and then with a prompt of the same structure customised for each book.</li>
         <li>Extract the names of flora and fauna under the ten required categories, and keep each Indian-language name in the form the text uses.</li>
         <li>Check every answer the model gave against the full source, and record what it got right, half right or wrong.</li>
         <li>Describe the kinds of bias that shape both the model's answers and the texts themselves.</li>
@@ -128,17 +128,17 @@
 
     <h3>The RAG pipeline in AnythingLLM</h3>
     <ol class="pipeline" id="pipeline">
-      <li><b>Upload</b><span>Each book was put into its own AnythingLLM workspace as a Gutenberg .txt file.</span></li>
+      <li><b>Upload</b><span>Each book was put into an AnythingLLM workspace as a plain-text file.</span></li>
       <li><b>Chunk</b><span>AnythingLLM cut the file into pieces of about 1,000 characters.</span></li>
       <li><b>Embed and store</b><span>Each piece became a vector in the workspace's vector database.</span></li>
       <li><b>Retrieve</b><span>The prompt was turned into a vector, and the 4 closest pieces with a similarity of at least 0.25 were kept.</span></li>
-      <li><b>Generate</b><span>Gemma 3 4B in LM Studio read those 4 pieces with the prompt, at temperature 0.1.</span></li>
+      <li><b>Generate</b><span>Gemma 3 4B in LM Studio read those 4 pieces with the prompt, at a temperature between 0.1 and 0.7.</span></li>
       <li><b>Answer</b><span>The model returned two tables, one for flora and one for fauna, with quotations.</span></li>
     </ol>
 
     <div class="two settings-block">
       <div>
-        <h4>Workspace settings, read from the screenshots</h4>
+        <h4>Workspace settings, read from the screenshots of all eight workspaces</h4>
         <div class="table-scroll">
         <table class="settings">
           <thead><tr><th scope="col">Setting</th><th scope="col">Value</th></tr></thead>
@@ -146,7 +146,7 @@
             <tr><td>Chat mode</td><td>Query (answers only if document context is found)</td></tr>
             <tr><td>Workspace LLM provider</td><td>System default (LM Studio)</td></tr>
             <tr><td>Agent model</td><td>google/gemma-3-4b</td></tr>
-            <tr><td>Temperature</td><td>0.2 for Gitanjali; 0.1 for the others</td></tr>
+            <tr><td>Temperature</td><td>0.1 for Ancient Ballads, The Jungle Book, The Bird of Time and The Golden Threshold; 0.2 for Gitanjali; 0.3 for The Adivasi Will Not Dance and Sakoontala; 0.7 for Glimpses of Bengal</td></tr>
             <tr><td>Chat history</td><td>20</td></tr>
             <tr><td>Search preference</td><td>Accuracy Optimized</td></tr>
             <tr><td>Max context snippets</td><td>4</td></tr>
@@ -158,34 +158,42 @@
       </div>
       <div>
         <h4>What the vector counts tell us</h4>
-        <p>The vector count is the number of chunks a workspace holds. For three books I split the same Gutenberg files into 1,000-character pieces and got almost the same numbers. That confirms the chunk size, and it shows that the Project Gutenberg licence was embedded too: about 13 or 14 chunks per book are licence text.</p>
+        <p>The vector count is the number of chunks a workspace holds. For <i>Ancient Ballads</i>, <i>The Jungle Book</i> and <i>The Golden Threshold</i> I split the same Gutenberg files into 1,000-character pieces and got almost the same numbers. That confirms the chunk size, and it shows that the Project Gutenberg licence was embedded too: about 13 or 14 chunks per book are licence text.</p>
         <div class="table-scroll">
         <table class="settings" id="vector-table">
           <thead><tr><th scope="col">Workspace</th><th scope="col">Vectors in AnythingLLM</th><th scope="col">My 1,000-character split</th></tr></thead>
           <tbody></tbody>
         </table>
         </div>
-        <p class="note">Gitanjali is the outlier. It should hold about 98 vectors and holds 2. Almost none of the book reached the model, which explains why its answer was invented. * For <i>The Bird of Time</i> I split the archive text, which has no licence pages. It gives 50 pieces against 60 in the workspace, so the file used in class was a little longer.</p>
+        <p class="note">Gitanjali is the outlier. It should hold about 98 vectors and holds 2. Almost none of the book reached the model, which explains why its answer was invented.</p>
+        <p class="note">&dagger; The screenshots for <i>Glimpses of Bengal</i>, <i>The Adivasi Will Not Dance</i> and <i>Sakoontala</i> show 0 vectors. In Query mode a workspace with nothing embedded can only reply "There is no relevant information in this workspace to answer your query". All three gave genuine quotations from their books instead, seven fully correct rows among them for <i>Glimpses of Bengal</i>. So each book must have been embedded when the prompt ran and removed before the screenshot was taken, and the vector count at the time of the query was not recorded. The <i>Sakoontala</i> workspace also carries the identifier sim-4, the same as the Gitanjali workspace, so the same workspace was used again.</p>
+        <p class="note">* Not a Gutenberg file. For <i>The Bird of Time</i> I split the archive text, which has no licence pages. It gives 50 pieces against 60 in the workspace, so the file used in class was a little longer. For <i>The Adivasi Will Not Dance</i> I split the supplied text file.</p>
       </div>
     </div>
 
     <h4 class="gallery-title">Screenshots from the AnythingLLM workspaces</h4>
-    <p class="hint shot-note" id="shot-note">Every workspace used the same settings.</p>
+    <p class="hint shot-note" id="shot-note">All eight workspaces share the same retrieval settings.</p>
     <div class="tabs" id="shot-tabs" role="tablist" aria-label="Workspace screenshots"></div>
     <div class="shots" id="shots"></div>
 
-    <h3>The extraction prompt</h3>
+    <h3>The extraction prompts</h3>
     <div class="narrow-left">
-      <p>One long prompt was used for every book. It sets a research-assistant role, defines the ten categories with examples, demands an exact quotation and location for each name, asks the model to keep Indian-language spellings, to mark doubtful names as ambiguous, to keep generic words apart, and to say honestly how much of the book it saw. It ends with a quality-control checklist. On paper it is a strict prompt. The audit below shows how little a prompt can do when the evidence never reaches the model.</p>
+      <p>Two prompts were used. The first, the primary prompt, is short and was tried first, in the same form for every book. It names the ten categories and asks, for each name, how it is written in the text, its category, a common English name if one can be reliably identified, an exact quotation and a page or section. Its rules forbid invented names, quotations, page numbers and identifications. They ask the model to keep Indian-language spellings, flag ambiguous names, drop duplicates, not assume a name is Indian just because the book is, and say so plainly when it has seen only part of the book. The answer is two tables, flora and fauna, and a short summary.</p>
+      <p>With the primary prompt the extraction did not work properly, so I wrote a second, customised prompt and used it for all eight books. Its structure never changes. It casts the model as a literary scholar and ecocritic, asks for two Markdown tables with fixed columns, and sets rules for aquatic and rural animals, regional plant names, plants and animals used as metaphors, and exact titles or sections. Three places, marked in square brackets, are filled in for each book: the author and title, a short note on the book, and a longer note on what to look for in it, with examples from that book. The answers audited on this site all come from this prompt. Only one filled-in version is shown below, the one written for Sarojini Naidu, as a sample. The other seven follow the same structure with their own authors, titles, notes and examples.</p>
+      <p>The customised prompt gets more out of the model, but it also hands it answers. Its examples (gulls, "leaping fish" and sharks in "Coromandel Fishers", snakes in "To a Buddha Seated on a Lotus", a mango grove, lotus-buds, champak and henna) come back almost word for word in the model's answer for <i>The Golden Threshold</i>, including two fish that are not in the book. Every book's version carried examples of its own, so the same risk runs through the whole audit. The audit shows what happened.</p>
     </div>
     <details class="prompt-box">
-      <summary>Read the full prompt</summary>
-      <div class="prompt-text" id="prompt-text"><p>Loading the prompt.</p></div>
+      <summary>Prompt 1: the primary prompt</summary>
+      <div class="prompt-text" id="prompt-primary"><p>Loading the prompt.</p></div>
+    </details>
+    <details class="prompt-box">
+      <summary>Prompt 2: the customised prompt, used for all eight books (the Naidu version, as a sample)</summary>
+      <div class="prompt-text" id="prompt-custom"><p>Loading the prompt.</p></div>
     </details>
 
     <h3>Rules for what counts</h3>
     <div class="narrow-left rules">
-      <p>I followed the prompt's own rules and wrote down every judgement call. Generic words such as tree, flower, bird or fish are listed separately and not counted. Plant parts (buds, petals, leaves, thorns) are left out. A character's name is not counted on its own, but the animal is: Shere Khan is counted under tiger, and the remark gives his name. A product is counted when its source is clear (sandalwood, cinnamon, betel-nut), and the remark says it is a product. Colour words such as "saffron footcloths" or "the raven hair" are rejected. Mythical beings (the makara, Shesha, the trees of Indra's garden, Naidu's jewelled serpent-king) are rejected, and so are brand names such as Kingfisher beer and Rajnigandha pan masala. Conches, clams, frogs and worms are real animals but fall outside the ten categories, so they are recorded under a separate heading. Names that appear only in an introduction or a translator's note are kept but flagged as paratext.</p>
+      <p>I kept to the prompts' rules where they apply (the exact quotation, the original spelling, ambiguous names flagged, no duplicates within a book) and wrote down every other judgement call. Generic words such as tree, flower, bird or fish are listed separately and not counted. Plant parts (buds, petals, leaves, thorns) are left out. A character's name is not counted on its own, but the animal is: Shere Khan is counted under tiger, and the remark gives his name. A product is counted when its source is clear (sandalwood, cinnamon, betel-nut), and the remark says it is a product. Colour words such as "saffron footcloths" or "the raven hair" are rejected. Mythical beings (the makara, Shesha, the trees of Indra's garden, Naidu's jewelled serpent-king) are rejected, and so are brand names such as Kingfisher beer and Rajnigandha pan masala. Conches, clams, frogs and worms are real animals but fall outside the ten categories, so they are recorded under a separate heading. Names that appear only in an introduction or a translator's note are kept but flagged as paratext.</p>
     </div>
   </div>
 </section>
@@ -261,7 +269,7 @@
       <article class="case">
         <h4>Gitanjali: deer that were never there</h4>
         <p class="said">"The deer graze peacefully in the meadow." <span>Poem II.5, according to the model</span></p>
-        <p>There are no deer or cattle anywhere in Gitanjali, and none of the model's fifteen quotations occurs in the book. The workspace held 2 vectors instead of about 98, so the model had almost nothing to read and wrote a plausible nature poem instead. Deer and cows are both examples in the prompt.</p>
+        <p>There are no deer or cattle anywhere in Gitanjali, and none of the model's fifteen quotations occurs in the book. The workspace held 2 vectors instead of about 98, so the model had almost nothing to read and wrote a plausible nature poem instead.</p>
       </article>
       <article class="case">
         <h4>Toru Dutt: the silk-cotton tree read as a creeper</h4>
@@ -276,7 +284,7 @@
       <article class="case">
         <h4>Sarojini Naidu: the koel becomes a weaverbird</h4>
         <p class="said">"Kokila: Bird, Weaverbird"</p>
-        <p>The line "A kokila called from a henna-spray" is genuine. But the kokila is the Asian koel, a cuckoo and the most familiar songbird in Indian poetry. The model also "implied" sharks and leaping fish in "Coromandel Fishers". Neither is in the poem.</p>
+        <p>The line "A kokila called from a henna-spray" is genuine. But the kokila is the Asian koel, a cuckoo and the most familiar songbird in Indian poetry. The model also "implied" sharks and leaping fish in "Coromandel Fishers". Neither is in the poem, but both are examples in the customised prompt, which named that very poem.</p>
       </article>
       <article class="case">
         <h4>Sarojini Naidu again: Gosse's robins</h4>
@@ -325,8 +333,9 @@
     <h3>3. The English of the books</h3>
     <p>Some of the bias was in the texts long before any model. Tagore's own translation of Gitanjali gives "the cuckoo" where the Bengali bird is almost certainly the koel. Toru Dutt fills a Bengal forest with nightingales, rooks and a roebuck, none of which lives there, and calls a langur in her garden a "grey baboon". Kipling calls the musk shrew, <i>chuchundar</i>, a "musk-rat". A Bombay playbill of 1855, quoted in Monier-Williams's introduction, glosses the black bee, <i>bhramar</i>, as "(fly)". Monier-Williams measures the asoka against "an ordinary cherry-tree", likens the Indian roller to "our jay", and gives the tree as <i>Jonesia Asoka</i>, a genus named after the British orientalist Sir William Jones. The "our" in "our jay" is a European reader. A model trained on English inherits that point of view, and the books hand it over again.</p>
 
-    <h3>4. Retrieval and the prompt</h3>
-    <p>With four chunks, a model sees between one and seven per cent of a book (four out of the 60 to 323 vectors in the workspaces). Everything else is invisible to it, and a strict prompt cannot change that. The prompt itself also nudged the answers. Its examples (banyan, peepal, neem, mango, sal, mahua, coconut, bamboo; elephant, tiger, deer, cow) were meant as illustrations. But the hallucinated rows match them closely: deer and cattle in Gitanjali, a sal tree in <i>The Jungle Book</i>, an "implied" deer in Toru Dutt. When the evidence is thin, examples in a prompt become answers.</p>
+    <h3>4. Retrieval and the prompts</h3>
+    <p>With four chunks, a model sees between one and seven per cent of a book (four out of the 60 to 323 vectors in the five workspaces whose counts were recorded). Everything else is invisible to it, and a strict prompt cannot change that.</p>
+    <p>The prompts also steered the answers. The primary prompt gives no examples of species, but the customised prompt, which produced every answer audited here, names examples from each book, and the model took them as findings. The Naidu version shows this most clearly. For <i>The Golden Threshold</i> it listed gulls, a mango grove, champak trees and sharks under "Coromandel Fishers", all marked "Implied", gave "Leaping fish" as a quotation, and gave a snake with the poem title "To a Buddha seated on a Lotus" as its quotation. Every one of these is an example in the prompt. The sea-gull and the mango grove are in that poem, the champak is elsewhere in the book, and the sharks and the leaping fish are not in the book at all. When the evidence is thin, examples in a prompt become answers.</p>
 
     <h3>5. The categories</h3>
     <p>The ten categories follow European natural history. They work well for mammals and birds. They work badly for Indian ritual plants. Across eight books only four names fit "Herbs": <i>tulsi</i>, <i>kusha</i> grass, <i>usira</i> (vetiver) and Naidu's "basil-wreath", which may or may not be tulsi. Kusha is a grass and a sacred object at once. The conch, which sounds through Gitanjali, Toru Dutt, Tagore's letters and Kipling, is not a plant or one of the five animal classes, so the scheme has nowhere to put it. Where a category is missing, the culture it carries goes missing too.</p>
@@ -338,7 +347,7 @@
     <p>Not everything in an "Indian" book is Indian. Two stories in <i>The Jungle Book</i> are set in the Bering Sea, so 27 of its rows (seals, walrus, halibut, puffins) are tagged as non-Indian or mixed. Naidu's Persian court poems bring hyacinths, tulips, orioles and peach groves, and Gosse's introduction to <i>The Bird of Time</i> brings English robins, skylarks and a lily of the valley. Tagore's letters drift into an Arabian Nights daydream of date groves and nightingales. The explorer lets you filter these out.</p>
 
     <h3>8. My own choices</h3>
-    <p>The checking track has its own bias, and it is mine. I decided what counts as generic, which senses to exclude and which names to merge. The English and Latin names in the second column come from standard botany and zoology, not from the texts. That breaks the prompt's rule against outside knowledge, so those names are kept in a separate column and every doubtful one is marked ambiguous. A second reader would make some different calls.</p>
+    <p>The checking track has its own bias, and it is mine. I decided what counts as generic, which senses to exclude and which names to merge. The English and Latin names in the second column come from standard botany and zoology, not from the texts. The primary prompt allows a common English name only when it can be reliably identified, so those names are kept in a separate column and every doubtful one is marked ambiguous. A second reader would make some different calls.</p>
   </div>
 </section>
 
@@ -353,11 +362,11 @@
     <p>Kipling is a special case. His animals carry Hindi names as personal names: Baloo (<i>bhalu</i>, bear), Hathi (elephant), the Bandar-log (monkey people), Nag (cobra), Darzee (tailor) and Chuchundra (musk shrew). The Indian word survives, but as a character's name rather than as the ordinary name of a species. That is why <i>The Jungle Book</i> has the lowest share of Indian-language forms, 10 per cent. <i>The Adivasi Will Not Dance</i> has the highest, 31 per cent, followed by <i>Sakoontala</i> at 26.</p>
 
     <h3>What the pipeline did</h3>
-    <p>Across the eight texts, the model returned 67 rows that hold a real name, against 469 verified entries. When the retrieved chunks happened to hold names, it did reasonably well: seven correct rows each for Toru Dutt's sonnets and Tagore's letters. When they did not, it filled the gap. It did so politely and in the exact format the prompt asked for, with section numbers, quotation marks and a note on limitations. That polish is the danger. An answer that looks like a careful scholar's work is easy to trust and hard to check.</p>
+    <p>Across the eight texts, the model returned 67 rows that hold a real name, against 469 verified entries. When the retrieved chunks happened to hold names, it did reasonably well: seven correct rows each for Toru Dutt's sonnets and Tagore's letters. When they did not, it filled the gap. It did so politely and in the exact format the prompts asked for, with section numbers, quotation marks and a note on limitations. That polish is the danger. An answer that looks like a careful scholar's work is easy to trust and hard to check.</p>
     <p>Most of the failure starts before generation. The Gitanjali workspace barely held the book. The other workspaces held it, but showed the model four chunks out of 60 to 323. A larger model would quote more accurately from the same four chunks. It would still not see the remaining 93 to 99 per cent of the book.</p>
 
     <h3>What would make it better</h3>
-    <p>Three changes would help most. First, query each category separately, so that the pipeline retrieves many small, targeted sets of chunks rather than one. Second, add a lexicon of Indian names (Bengali, Hindi, Sanskrit and Anglo-Indian) to the search, so that <i>kokila</i> and <i>seemul</i> are looked for on purpose. Third, never accept a quotation without checking it against the source. <code>rag_pipeline.py</code> includes that check, and it would have flagged every invented quotation in this audit within seconds.</p>
+    <p>Four changes would help most. First, query each category separately, so that the pipeline retrieves many small, targeted sets of chunks rather than one. Second, add a lexicon of Indian names (Bengali, Hindi, Sanskrit and Anglo-Indian) to the search, so that <i>kokila</i> and <i>seemul</i> are looked for on purpose. Third, never accept a quotation without checking it against the source. <code>rag_pipeline.py</code> includes that check, and it would have flagged every invented quotation in this audit within seconds. Fourth, keep named examples out of a customised prompt, or check every answer that repeats one with extra care.</p>
   </div>
 </section>
 
@@ -371,7 +380,10 @@
         <li><i>The Bird of Time</i> was checked against a Wikisource transcription, not the 1912 printing. Small differences of spelling or punctuation are possible.</li>
         <li>All texts are English versions. I did not compare the Bengali or Sanskrit originals, so I cannot say what the translators changed in every case.</li>
         <li>One person did the checking. There is no second annotator and no agreement score.</li>
-        <li>Each book was queried once. Language models vary from run to run, and I did not repeat the queries.</li>
+        <li>One answer per book was audited. Language models vary from run to run, and the runs were not repeated.</li>
+        <li>The customised prompt was filled in separately for each book, and only the Naidu version is shown here. Its notes and examples differ from book to book, so the eight answers were not produced by identical prompts.</li>
+        <li>Only the answers from the customised prompt were audited, so the two prompts are not compared book by book.</li>
+        <li>The temperature was not the same in every workspace (0.1 to 0.7), and three screenshots were taken after the book had been removed, so their vector counts at query time are not known.</li>
         <li>Plain-text files have no page numbers, so locations are given by section and line number in the cleaned files.</li>
         <li>WordNet and my word lists may still have missed a name. A rare word that is also a common English word could slip through both nets.</li>
         <li>The line between a generic word and a named kind (grass, palm, snake) is a judgement call, and other readers might draw it elsewhere.</li>
@@ -379,8 +391,8 @@
     </div>
     <div>
       <h2>Conclusion</h2>
-      <p>The eight books are full of Indian plants and animals, named in Bengali, Sanskrit, Hindi, Persian and colonial English. A small RAG pipeline, run with a strict prompt, found about one name in seven. It also invented quotations, mislabelled Indian species with Western ones, and filed people and products as animals.</p>
-      <p>The fault is not only the model's. Retrieval showed it too little of each book. The lexical tools did not know the Indian names. Some translations had already changed them, and the categories had no place for ritual plants and shells. For Indian cultural material, a RAG answer is a set of leads to check, not a result. The verified lists on this site, and the quotations behind them, are the result.</p>
+      <p>The eight books are full of Indian plants and animals, named in Bengali, Sanskrit, Hindi, Persian and colonial English. A small RAG pipeline, run with a prompt customised for each book, found about one name in seven. It also invented quotations, mislabelled Indian species with Western ones, and filed people and products as animals.</p>
+      <p>The fault is not only the model's. Retrieval showed it too little of each book. The lexical tools did not know the Indian names. Some translations had already changed them, the examples in a prompt turned into answers, and the categories had no place for ritual plants and shells. For Indian cultural material, a RAG answer is a set of leads to check, not a result. The verified lists on this site, and the quotations behind them, are the result.</p>
     </div>
   </div>
 </section>

@@ -259,7 +259,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums lining-nu
 .prompt-box summary, .audit-table-box summary { cursor: pointer; padding: .9rem 1.2rem; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .6rem; }
 .prompt-box summary::before, .audit-table-box summary::before { content: "+"; font-family: var(--display); font-size: 1.3rem; width: 1.2rem; color: var(--lamp-ink); }
 details[open] > summary::before { content: "\2212"; }
-.prompt-text { padding: 0 1.4rem 1.4rem; max-height: 70vh; overflow: auto; font-size: 1rem; line-height: 1.6; border-top: 1px solid var(--rule); }
+.prompt-text { padding: .9rem 1.4rem 1.2rem; overflow-wrap: anywhere; font-size: 1rem; line-height: 1.6; border-top: 1px solid var(--rule); }
 .prompt-text h1, .prompt-text h2, .prompt-text h3 { font-family: var(--text); font-weight: 600; letter-spacing: 0; }
 .prompt-text h1 { font-size: 1.35rem; margin: 1.2rem 0 .4rem; }
 .prompt-text h2 { font-size: 1.2rem; margin: 1.4rem 0 .4rem; }
@@ -430,3 +430,7 @@ input[type="checkbox"] { width: 1.05rem; height: 1.05rem; accent-color: var(--le
 .to-top span { transform: translateY(-1px); }
 @media (prefers-reduced-motion: reduce) { .to-top, .to-top.show { transition: none; } }
 @media print { .to-top { display: none; } }
+.prompt-text > :first-child { margin-top: 0; }
+.prompt-text table th { white-space: normal; min-width: 7.5rem; }
+.prompt-box + .prompt-box { margin-top: .7rem; }
+.prompt-text .table-scroll { margin: .3rem 0 1.1rem; }
